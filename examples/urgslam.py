@@ -28,7 +28,7 @@ from breezyslam.sensors import URG04LX as LaserModel
 
 from breezylidar import URG04LX as Lidar
 
-from pltslamshow import SlamShow
+from roboviz import MapVisualizer
        
 if __name__ == '__main__':
 
@@ -39,7 +39,7 @@ if __name__ == '__main__':
     slam = RMHC_SLAM(LaserModel(), MAP_SIZE_PIXELS, MAP_SIZE_METERS)
 
     # Set up a SLAM display
-    display = SlamShow(MAP_SIZE_PIXELS, MAP_SIZE_METERS*1000/MAP_SIZE_PIXELS, 'SLAM')
+    viz = MapVisualizer(MAP_SIZE_PIXELS, MAP_SIZE_METERS, 'SLAM')
 
     # Initialize empty map
     mapbytes = bytearray(MAP_SIZE_PIXELS * MAP_SIZE_PIXELS)
@@ -55,12 +55,6 @@ if __name__ == '__main__':
         # Get current map bytes as grayscale
         slam.getmap(mapbytes)
 
-        display.displayMap(mapbytes)
-
-        display.setPose(x, y, theta)
-
-        # Exit on ESCape
-        key = display.refresh()
-        if key != None and (key&0x1A):
+        # Display map and robot pose, exiting gracefully if user closes it
+        if not viz.display(x/1000., y/1000., theta, mapbytes):
             exit(0)
-     

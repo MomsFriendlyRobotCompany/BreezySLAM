@@ -4,18 +4,18 @@ BreezySLAM
 <img src="breezyslam.png" align="center" width=700>
 
 <p><p><p>
-
-<b>Simple, efficient, open-source package for Simultaneous Localization and Mapping in Python, Matlab, Java, and C++</b>
-
+    
 <a href="https://github.com/simondlevy/BreezySLAM">This repository</a> contains everything you need to
 start working with 
 <a href="http://en.wikipedia.org/wiki/Lidar">Lidar</a>
 -based
 <a href="http://en.wikipedia.org/wiki/Simultaneous_localization_and_mapping">SLAM</a> 
-in Python, Matlab or C++.  BreezySLAM works with Python 2 and 3 on Linux and Mac OS X, and
+in Python. (There is also support for Matlab, C++, and Java; however, because of the popularity of
+Python for this kind of work, I am no longer updating the code for those languages.)
+BreezySLAM works with Python 3 on Linux and Mac OS X, and
 with C++ on Linux and Windows.
 By using Python C extensions, we were able to get the Python and Matlab versions to run
-as fast as C++. For maximum effiency on 32-bit platforms, we use Streaming
+as fast as C++. For maximum efficiency on 32-bit platforms, we use Streaming
 SIMD extensions (Intel) and NEON (ARMv7) in the compute-intensive part
 of the code.
 </p><p>
@@ -83,8 +83,8 @@ map and robot trajctory for the Lidar scan and odometry data in the log file
 you can also try the <b><tt>log2png.py</tt></b> script to generate a
 a PNG file instead.
 
-If you have installed Matplotlib, you can see a &ldquo;live&rdquo; animation
-by doing
+If you have installed [PyRoboViz](https://github.com/simondlevy/PyRoboViz),
+you can see a &ldquo;live&rdquo; animation by doing
 
 <pre>
 make movie
@@ -114,11 +114,19 @@ try the  <b>urgslam.py</b> example in the examples folder.
 
 <p><h3>Testing with the GetSurreal XV Lidar</h3>
 
-BreezySLAM now includes Python support for the inexpensive 
+BreezySLAM includes Python support for the inexpensive 
 <a href="https://www.getsurreal.com/product/xv-lidar-sensor-mount-package">XV Lidar</a> from GetSurreal.
 To try it out, you'll also need the <a href="https://github.com/simondlevy/xvlidar">xvlidar</a> 
 Python package.  Once you've installed
 both packages, you can run the <b>xvslam.py</b> example in the <b>BreezySLAM/examples</b> folder.
+
+<p><h3>Testing with the SLAMTEC RPLidar A1</h3>
+
+BreezySLAM also includes Python support for the inexpensive 
+<a href="http://www.slamtec.com/en/lidar/a1">RPLidar A1</a> from SLAMTECH.
+To try it out, you'll also need the <a href="https://github.com/SkoltechRobotics/rplidar">rplidar</a> 
+Python package.  Once you've installed that package, you can run the
+<b>rpslam.py</b> example in the <b>BreezySLAM/examples</b> folder.
 
 </p><h3>Installing for Matlab</h3>
 
@@ -145,11 +153,19 @@ For making the binary on Windows I found
 
 Just cd to <tt><b>BreezySLAM/cpp</b></tt>, and do
 
-&nbsp; &nbsp; <h3><b><tt>sudo make install</tt></b></h3>
+<pre>
+sudo make install
+</pre>
 
 This will put the <tt><b>libbreezyslam</b></tt> shareable library in your <tt><b>/usr/local/lib</b></tt>
 directory.  If you keep your shared libraries elsewhere, just change the <tt><b>LIBDIR</b></tt>
-variable at the top of the Makefile.
+variable at the top of the Makefile.  You may also need to add the following line to your <b>~/.bashrc</b>
+file:
+
+<pre>
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+</pre>
+
 
 <p>
 
@@ -170,9 +186,8 @@ the Makefile in this directory as well, if you don't use <tt><b>/usr/local/lib</
 
 In <tt><b>BreezySLAM/java/edu/wlu/cs/levy/breezyslam/algorithms</b></tt> and
 <tt><b>BreezySLAM/java/edu/wlu/cs/levy/breezyslam/components</b></tt>,
-edit the <tt>JDKINC</tt> variable to reflect where you installed the JDK.
-Then run make in these directories, and also in
-<tt><b>BreezySLAM/java/edu/wlu/cs/levy/breezyslam/robots</b></tt>.
+edit the <tt>JDKINC</tt> variable in the Makefile to reflect where you installed the JDK.
+Then run <b>make</b> in these directories.
 
 <p>
 

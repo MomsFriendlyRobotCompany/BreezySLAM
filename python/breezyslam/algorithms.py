@@ -1,6 +1,6 @@
 '''
 BreezySLAM: Simple, efficient SLAM in Python
-#
+
 algorithms.py: SLAM algorithms
 
 Copyright (C) 2014 Simon D. Levy
@@ -18,9 +18,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License 
 along with this code.  If not, see <http:#www.gnu.org/licenses/>.
 '''
-
-# distanceScanToMap is implemented as a C extension for efficiency
-from pybreezyslam import distanceScanToMap
 
 import pybreezyslam
 
@@ -87,29 +84,30 @@ class CoreSLAM(object):
         # Initialize the map 
         self.map = pybreezyslam.Map(map_size_pixels, map_size_meters)
                 
-    def update(self, scans_mm, poseChange, should_update_map=True):
+    def update(self, scans_mm, pose_change, scan_angles_degrees=None, should_update_map=True):
         '''
         Updates the scan and odometry, and calls the the implementing class's _updateMapAndPointcloud method with
         the specified pose change.
          
         scan_mm is a list of Lidar scan values, whose count is specified in the scan_size 
         attribute of the Laser object passed to the CoreSlam constructor
-        poseChange is a tuple (dxy_mm, dtheta_degrees, dt_seconds) computed from odometry
+        pose_change is a tuple (dxy_mm, dtheta_degrees, dt_seconds) computed from odometry
+        scan_angles_degrees is an optional list of angles corresponding to the distances in scans_mm
         should_update_map flags for whether you want to update the map
         '''
 
-        # Convert (dxy,dtheta,dt) to (dxy/dt, dtheta/dt) for scan update
-        velocity_factor = (1 / poseChange[2])  if (poseChange[2] > 0) else 0 # units => units/sec
-        dxy_mm_dt = poseChange[0] * velocity_factor  
-        dtheta_degrees_dt = poseChange[1] * velocity_factor
+        # Convert pose change (dxy,dtheta,dt) to velocities (dxy/dt, dtheta/dt) for scan update
+        velocity_factor = (1 / pose_change[2])  if (pose_change[2] > 0) else 0 # units => units/sec
+        dxy_mm_dt = pose_change[0] * velocity_factor  
+        dtheta_degrees_dt = pose_change[1] * velocity_factor
         velocities = (dxy_mm_dt, dtheta_degrees_dt)
 
         # Build a scan for computing distance to map, and one for updating map 
-        self._scan_update(self.scan_for_mapbuild, scans_mm, velocities)
-        self._scan_update(self.scan_for_distance, scans_mm, velocities)
+        self._scan_update(self.scan_for_mapbuild, scans_mm, velocities, scan_angles_degrees)
+        self._scan_update(self.scan_for_distance, scans_mm, velocities, scan_angles_degrees)
 
         # Implementing class updates map and pointcloud
-        self._updateMapAndPointcloud(poseChange[0], poseChange[1], should_update_map)
+        self._updateMapAndPointcloud(pose_change[0], pose_change[1], should_update_map)
         
     def getmap(self, mapbytes):
         '''
@@ -136,9 +134,10 @@ class CoreSLAM(object):
          return self.__str__()
 
         
-    def _scan_update(self, scan, lidar, velocities):
-        
-        scan.update(scans_mm=lidar, hole_width_mm=self.hole_width_mm, velocities=velocities)
+    def _scan_update(self, scan, scans_distances_mm, velocities, scan_angles_degrees):
+
+        scan.update(scans_mm=scans_distances_mm, hole_width_mm=self.hole_width_mm, 
+                velocities=velocities, scan_angles_degrees=scan_angles_degrees)
         
         
 # SinglePositionSLAM class ---------------------------------------------------------------------------------------------
@@ -251,13 +250,13 @@ class RMHC_SLAM(SinglePositionSLAM):
         self.sigma_theta_degrees = sigma_theta_degrees
         self.max_search_iter = max_search_iter
         
-    def update(self, scan_mm, velocities=None, should_update_map=True):
+    def update(self, scans_mm, pose_change=None, scan_angles_degrees=None, should_update_map=True):
 
-        if not velocities:
+        if not pose_change:
         
-            velocities = (0, 0, 0)
+            pose_change = (0, 0, 0)
     
-        CoreSLAM.update(self, scan_mm, velocities, should_update_map)   
+        CoreSLAM.update(self, scans_mm, pose_change, scan_angles_degrees, should_update_map)   
     
     def _getNewPosition(self, start_position):
         '''
@@ -308,5 +307,3 @@ class Deterministic_SLAM(SinglePositionSLAM):
         '''
         
         return start_position.copy()
-        
-  

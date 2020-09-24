@@ -161,12 +161,15 @@ public:
     {
     }
     
-    PoseChange computePoseChange(long * odometry, PoseChange & poseChange)
+    PoseChange computePoseChange(
+            double timestamp,
+            double left_wheel_odometry,
+            double right_wheel_odometry)
     {  
         return WheeledRobot::computePoseChange(
-            odometry[0], 
-            odometry[1], 
-            odometry[2]);
+                timestamp,
+                left_wheel_odometry,
+                right_wheel_odometry);
     }
 
 protected:    
@@ -350,7 +353,8 @@ int main( int argc, const char** argv )
         // Update with/out odometry
         if (use_odometry)
         {
-            PoseChange poseChange = robot.computePoseChange(odometries[scanno], poseChange);
+            long * o = odometries[scanno];
+            PoseChange poseChange = robot.computePoseChange(o[0], o[1], o[2]);
             slam->update(lidar, poseChange);            
         }
         else
